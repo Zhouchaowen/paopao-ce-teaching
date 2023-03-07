@@ -1,0 +1,6 @@
+Server: # 服务设置
+  RunMode: debug
+  HttpIp: 10.2.8.17
+  HttpPort: 8008
+  ReadTimeout: 60
+  WriteTimeout: 60
