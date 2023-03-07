@@ -9,6 +9,7 @@ import (
 
 func init() {
 	conf.Initialize()
+	conf.MustGormDB()
 }
 
 func main() {

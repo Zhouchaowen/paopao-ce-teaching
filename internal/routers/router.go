@@ -3,6 +3,7 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"paopao-ce-teaching/internal/routers/api"
 )
 
 func NewRouter() *gin.Engine {
@@ -19,6 +20,9 @@ func NewRouter() *gin.Engine {
 			"data": "v0.0.1",
 		})
 	})
+
+	// 用户登录
+	r.POST("/auth/login", api.Login)
 
 	// 默认404
 	e.NoRoute(func(c *gin.Context) {

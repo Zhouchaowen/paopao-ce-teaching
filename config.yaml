@@ -1,6 +1,15 @@
 Server: # 服务设置
   RunMode: debug
-  HttpIp: 10.2.8.17
+  HttpIp: 0.0.0.0
   HttpPort: 8008
   ReadTimeout: 60
   WriteTimeout: 60
+MySQL: # MySQL数据库
+  Username: paopao
+  Password: paopao
+  Host: 10.2.0.107:3306
+  DBName: paopao
+  Charset: utf8mb4
+  ParseTime: True
+  MaxIdleConns: 10
+  MaxOpenConns: 30

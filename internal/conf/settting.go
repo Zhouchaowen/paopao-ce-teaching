@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/spf13/viper"
@@ -16,6 +17,28 @@ type ServerSettingS struct {
 	HttpPort     string
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
+}
+
+type MySQLSettingS struct {
+	UserName     string
+	Password     string
+	Host         string
+	DBName       string
+	Charset      string
+	ParseTime    bool
+	MaxIdleConns int
+	MaxOpenConns int
+}
+
+func (s *MySQLSettingS) Dsn() string {
+	return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=%s&parseTime=%t&loc=Local",
+		s.UserName,
+		s.Password,
+		s.Host,
+		s.DBName,
+		s.Charset,
+		s.ParseTime,
+	)
 }
 
 func NewSetting() (*Setting, error) {

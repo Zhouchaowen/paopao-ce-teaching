@@ -4,6 +4,8 @@ import "log"
 
 var (
 	ServerSetting *ServerSettingS
+
+	MysqlSetting *MySQLSettingS
 )
 
 func setupSetting() error {
@@ -14,6 +16,7 @@ func setupSetting() error {
 
 	objects := map[string]interface{}{
 		"Server": &ServerSetting,
+		"MySQL":  &MysqlSetting,
 	}
 	if err = setting.Unmarshal(objects); err != nil {
 		return err
