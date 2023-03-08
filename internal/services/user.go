@@ -1,11 +1,10 @@
 package services
 
 import (
-	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"paopao-ce-teaching/internal/conf"
 	"paopao-ce-teaching/internal/cores/user"
+	"paopao-ce-teaching/pkg/errors"
 	"paopao-ce-teaching/pkg/util"
 	"regexp"
 	"strings"
@@ -23,10 +22,10 @@ type RegisterRequest struct {
 }
 
 // DoLogin 用户认证
-func DoLogin(ctx *gin.Context, param *AuthRequest) (*user.User, error) {
+func DoLogin(param *AuthRequest) (*user.User, error) {
 	u, err := user.GetUserByUsername(conf.DB, param.Username)
 	if err != nil {
-		return nil, fmt.Errorf("账户不存在")
+		return nil, errors.UnauthorizedAuthNotExist
 	}
 
 	if u.ID > 0 {
@@ -34,16 +33,16 @@ func DoLogin(ctx *gin.Context, param *AuthRequest) (*user.User, error) {
 		if ValidPassword(u.Password, param.Password, u.Salt) {
 
 			if u.Status == user.UserStatusClosed {
-				return nil, fmt.Errorf("该账户已被封停")
+				return nil, errors.UserHasBeenBanned
 			}
 
 			return u, nil
 		}
 
-		return nil, fmt.Errorf("账户密码错误")
+		return nil, errors.UnauthorizedAuthFailed
 	}
 
-	return nil, fmt.Errorf("账户不存在")
+	return nil, errors.UnauthorizedAuthNotExist
 }
 
 // ValidPassword 检查密码是否一致
@@ -55,18 +54,18 @@ func ValidPassword(dbPassword, password, salt string) bool {
 func ValidUsername(username string) error {
 	// 检测用户是否合规
 	if utf8.RuneCountInString(username) < 3 || utf8.RuneCountInString(username) > 12 {
-		return fmt.Errorf("用户名长度3~12")
+		return errors.UsernameLengthLimit
 	}
 
 	if !regexp.MustCompile(`^[a-zA-Z0-9]+$`).MatchString(username) {
-		return fmt.Errorf("用户名只能包含字母、数字")
+		return errors.UsernameCharLimit
 	}
 
 	// 重复检查
 	user, _ := user.GetUserByUsername(conf.DB, username)
 
 	if user.ID > 0 {
-		return fmt.Errorf("用户名已存在")
+		return errors.UsernameHasExisted
 	}
 
 	return nil
@@ -76,7 +75,7 @@ func ValidUsername(username string) error {
 func CheckPassword(password string) error {
 	// 检测用户是否合规
 	if utf8.RuneCountInString(password) < 6 || utf8.RuneCountInString(password) > 16 {
-		return fmt.Errorf("密码长度6~16")
+		return errors.PasswordLengthLimit
 	}
 
 	return nil
