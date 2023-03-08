@@ -24,6 +24,9 @@ func NewRouter() *gin.Engine {
 	// 用户登录
 	r.POST("/auth/login", api.Login)
 
+	// 用户注册
+	r.POST("/auth/register", api.Register)
+
 	// 默认404
 	e.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{

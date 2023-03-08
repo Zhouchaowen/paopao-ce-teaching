@@ -1,7 +1,7 @@
 package app
 
 import (
-	"paopao-ce-teaching/internal/core/user"
+	"paopao-ce-teaching/internal/cores/user"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"

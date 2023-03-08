@@ -27,3 +27,9 @@ func GetUserByUsername(db *gorm.DB, username string) (*User, error) {
 
 	return &user, nil
 }
+
+func Create(db *gorm.DB, u *User) (*User, error) {
+	err := db.Create(&u).Error
+
+	return u, err
+}

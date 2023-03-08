@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.9.0
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/google/martian v2.1.0+incompatible
 	github.com/spf13/viper v1.15.0
 	gorm.io/driver/mysql v1.4.3
