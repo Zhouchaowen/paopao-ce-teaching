@@ -109,3 +109,18 @@ func Register(username, password string) (*user.User, error) {
 
 	return userTmp, nil
 }
+
+// GetUserByUsername 通过用户名获取用户基本信息
+func GetUserByUsername(username string) (*user.User, error) {
+	u, err := user.GetUserByUsername(conf.DB, username)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if u.ID > 0 {
+		return u, nil
+	}
+
+	return nil, errors.NoExistUsername
+}

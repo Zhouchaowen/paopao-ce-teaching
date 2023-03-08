@@ -82,3 +82,24 @@ func Register(c *gin.Context) {
 		"username": user.Username,
 	})
 }
+
+// GetUserProfile 获取用户基本信息
+func GetUserProfile(c *gin.Context) {
+	username := c.Query("username")
+
+	user, err := services.GetUserByUsername(username)
+	if err != nil {
+		log.Errorf("service.GetUserByUsername err: %v\n", err)
+		app.ToErrorResponse(c, errors.NoExistUsername)
+		return
+	}
+
+	app.ToResponse(c, gin.H{
+		"id":       user.ID,
+		"nickname": user.Nickname,
+		"username": user.Username,
+		"status":   user.Status,
+		"avatar":   user.Avatar,
+		"is_admin": user.IsAdmin,
+	})
+}
