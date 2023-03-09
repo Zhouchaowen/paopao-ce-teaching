@@ -103,3 +103,34 @@ func GetUserProfile(c *gin.Context) {
 		"is_admin": user.IsAdmin,
 	})
 }
+
+// GetUserInfo 获取用户基本信息
+func GetUserInfo(c *gin.Context) {
+	username, exists := c.Get("USERNAME")
+	if !exists {
+		app.ToErrorResponse(c, errors.UnauthorizedAuthNotExist)
+		return
+	}
+
+	user, err := services.GetUserByUsername(username.(string))
+	if err != nil {
+		app.ToErrorResponse(c, errors.UnauthorizedAuthNotExist)
+		return
+	}
+
+	phone := ""
+	if user.Phone != "" && len(user.Phone) == 11 {
+		phone = user.Phone[0:3] + "****" + user.Phone[7:]
+	}
+
+	app.ToResponse(c, gin.H{
+		"id":       user.ID,
+		"nickname": user.Nickname,
+		"username": user.Username,
+		"status":   user.Status,
+		"avatar":   user.Avatar,
+		"balance":  user.Balance,
+		"phone":    phone,
+		"is_admin": user.IsAdmin,
+	})
+}

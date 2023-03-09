@@ -3,6 +3,7 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"paopao-ce-teaching/internal/middleware"
 	"paopao-ce-teaching/internal/routers/api"
 )
 
@@ -29,6 +30,13 @@ func NewRouter() *gin.Engine {
 
 	// 获取用户基本信息
 	r.GET("/user/profile", api.GetUserProfile)
+
+	// 鉴权路由组
+	authApi := r.Group("/").Use(middleware.JWT())
+	{
+		// 获取当前用户信息
+		authApi.GET("/user/info", api.GetUserInfo)
+	}
 
 	// 默认404
 	e.NoRoute(func(c *gin.Context) {
