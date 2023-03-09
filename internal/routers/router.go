@@ -36,6 +36,12 @@ func NewRouter() *gin.Engine {
 	{
 		// 获取当前用户信息
 		authApi.GET("/user/info", api.GetUserInfo)
+
+		// 修改密码
+		authApi.POST("/user/password", api.ChangeUserPassword)
+
+		// 修改昵称
+		authApi.POST("/user/nickname", api.ChangeNickname)
 	}
 
 	// 默认404

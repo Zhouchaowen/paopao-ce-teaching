@@ -21,6 +21,15 @@ type RegisterRequest struct {
 	Password string `json:"password" form:"password" binding:"required"`
 }
 
+type ChangePasswordReq struct {
+	Password    string `json:"password" form:"password" binding:"required"`
+	OldPassword string `json:"old_password" form:"old_password" binding:"required"`
+}
+
+type ChangeNicknameReq struct {
+	Nickname string `json:"nickname" form:"nickname" binding:"required"`
+}
+
 // DoLogin 用户认证
 func DoLogin(param *AuthRequest) (*user.User, error) {
 	u, err := user.GetUserByUsername(conf.DB, param.Username)
@@ -123,4 +132,12 @@ func GetUserByUsername(username string) (*user.User, error) {
 	}
 
 	return nil, errors.NoExistUsername
+}
+
+// UpdateUserInfo 更新用户信息
+func UpdateUserInfo(u *user.User) *errors.Error {
+	if err := user.UpdateUser(conf.DB, u); err != nil {
+		return errors.ServerError
+	}
+	return nil
 }

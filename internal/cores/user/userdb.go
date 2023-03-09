@@ -33,3 +33,25 @@ func Create(db *gorm.DB, u *User) (*User, error) {
 
 	return u, err
 }
+
+func UpdateUser(db *gorm.DB, u *User) error {
+	return db.Model(&User{}).Where("id = ? AND is_del = ?", u.ID, 0).Save(u).Error
+}
+
+func Get(db *gorm.DB, u *User) (*User, error) {
+	var user User
+	if u.ID > 0 {
+		db = db.Where("id= ? AND is_del = ?", u.ID, 0)
+	} else if u.Phone != "" {
+		db = db.Where("phone = ? AND is_del = ?", u.Phone, 0)
+	} else {
+		db = db.Where("username = ? AND is_del = ?", u.Username, 0)
+	}
+
+	err := db.First(&user).Error
+	if err != nil {
+		return &user, err
+	}
+
+	return &user, nil
+}

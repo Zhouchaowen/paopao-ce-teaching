@@ -8,6 +8,7 @@ import (
 	"paopao-ce-teaching/pkg/app"
 	"paopao-ce-teaching/pkg/errors"
 	jwt "paopao-ce-teaching/pkg/jwt"
+	"unicode/utf8"
 )
 
 // Login 用户登录
@@ -133,4 +134,81 @@ func GetUserInfo(c *gin.Context) {
 		"phone":    phone,
 		"is_admin": user.IsAdmin,
 	})
+}
+
+// ChangeUserPassword 修改密码
+func ChangeUserPassword(c *gin.Context) {
+	param := services.ChangePasswordReq{}
+	valid, errs := app.BindAndValid(c, &param)
+	if !valid {
+		log.Errorf("app.BindAndValid errs: %v", errs)
+		app.ToErrorResponse(c, errors.InvalidParams.WithDetails(errs.Errors()...))
+		return
+	}
+
+	username, exists := c.Get("USERNAME")
+	if !exists {
+		app.ToErrorResponse(c, errors.UnauthorizedAuthNotExist)
+		return
+	}
+
+	user, err := services.GetUserByUsername(username.(string))
+	if err != nil {
+		app.ToErrorResponse(c, errors.UnauthorizedAuthNotExist)
+		return
+	}
+
+	// 密码检查
+	err = services.CheckPassword(param.Password)
+	if err != nil {
+		log.Errorf("service.Register err: %v", err)
+		app.ToErrorResponse(c, err.(*errors.Error))
+		return
+	}
+
+	// 旧密码校验
+	if !services.ValidPassword(user.Password, param.OldPassword, user.Salt) {
+		app.ToErrorResponse(c, errors.ErrorOldPassword)
+		return
+	}
+
+	// 更新入库
+	user.Password, user.Salt = services.EncryptPasswordAndSalt(param.Password)
+	services.UpdateUserInfo(user)
+
+	app.ToResponse(c, nil)
+}
+
+// ChangeNickname 修改昵称
+func ChangeNickname(c *gin.Context) {
+	param := services.ChangeNicknameReq{}
+	valid, errs := app.BindAndValid(c, &param)
+	if !valid {
+		log.Errorf("app.BindAndValid errs: %v", errs)
+		app.ToErrorResponse(c, errors.InvalidParams.WithDetails(errs.Errors()...))
+		return
+	}
+
+	if utf8.RuneCountInString(param.Nickname) < 2 || utf8.RuneCountInString(param.Nickname) > 12 {
+		app.ToErrorResponse(c, errors.NicknameLengthLimit)
+		return
+	}
+
+	username, exists := c.Get("USERNAME")
+	if !exists {
+		app.ToErrorResponse(c, errors.UnauthorizedAuthNotExist)
+		return
+	}
+
+	user, err := services.GetUserByUsername(username.(string))
+	if err != nil {
+		app.ToErrorResponse(c, errors.UnauthorizedAuthNotExist)
+		return
+	}
+
+	// 执行绑定
+	user.Nickname = param.Nickname
+	services.UpdateUserInfo(user)
+
+	app.ToResponse(c, nil)
 }
