@@ -7,7 +7,9 @@ require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/google/martian v2.1.0+incompatible
+	github.com/rocboss/paopao-ce v0.2.2
 	github.com/spf13/viper v1.15.0
+	github.com/yinheli/mahonia v0.0.0-20131226213531-0eef680515cc
 	gorm.io/driver/mysql v1.4.3
 	gorm.io/gorm v1.24.3
 	gorm.io/plugin/soft_delete v1.2.0
@@ -27,7 +29,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
+	github.com/klauspost/cpuid/v2 v2.1.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect

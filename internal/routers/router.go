@@ -44,6 +44,11 @@ func NewRouter() *gin.Engine {
 		authApi.POST("/user/nickname", api.ChangeNickname)
 	}
 
+	{
+		// 发布动态
+		authApi.POST("/post", api.CreatePost)
+	}
+
 	// 默认404
 	e.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
