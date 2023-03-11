@@ -27,6 +27,23 @@ func ToResponse(ctx *gin.Context, data interface{}) {
 	ctx.JSON(http.StatusOK, data)
 }
 
+type Pager struct {
+	Page      int   `json:"page"`
+	PageSize  int   `json:"page_size"`
+	TotalRows int64 `json:"total_rows"`
+}
+
+func ToResponseList(ctx *gin.Context, list interface{}, totalRows int64) {
+	ToResponse(ctx, gin.H{
+		"list": list,
+		"pager": Pager{
+			Page:      GetPage(ctx),
+			PageSize:  GetPageSize(ctx),
+			TotalRows: totalRows,
+		},
+	})
+}
+
 func ToErrorResponse(ctx *gin.Context, err *errors.Error) {
 	response := gin.H{"code": err.Code(), "msg": err.Msg()}
 	details := err.Details()

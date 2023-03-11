@@ -34,3 +34,40 @@ func DeletePostByPostId(db *gorm.DB, postId int64) error {
 		"is_del":     1,
 	}).Error
 }
+
+func GetPostsByConditions(db *gorm.DB, conditions *map[string]interface{}, offset, limit int) ([]*Post, error) {
+	var posts []*Post
+	var err error
+	if offset >= 0 && limit > 0 {
+		db = db.Offset(offset).Limit(limit)
+	}
+
+	for k, v := range *conditions {
+		if k == "ORDER" {
+			db = db.Order(v)
+		} else {
+			db = db.Where(k, v)
+		}
+	}
+
+	if err = db.Where("is_del = ?", 0).Find(&posts).Error; err != nil {
+		return nil, err
+	}
+
+	return posts, nil
+}
+
+func CountByConditions(db *gorm.DB, conditions *map[string]interface{}) (int64, error) {
+	var count int64
+
+	for k, v := range *conditions {
+		if k != "ORDER" {
+			db = db.Where(k, v)
+		}
+	}
+	if err := db.Model(&Post{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

@@ -141,3 +141,7 @@ func UpdateUserInfo(u *user.User) *errors.Error {
 	}
 	return nil
 }
+
+func GetUsersByConditions(conditions *map[string]interface{}, offset, limit int) ([]*user.User, error) {
+	return user.GetUsersByConditions(conf.DB, conditions, offset, limit)
+}

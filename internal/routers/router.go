@@ -54,6 +54,8 @@ func NewRouter() *gin.Engine {
 		// 获取动态详情
 		r.GET("/post", api.GetPost)
 
+		// 获取用户动态列表
+		authApi.GET("/user/posts", api.GetUserPosts)
 	}
 
 	// 默认404

@@ -176,3 +176,74 @@ func DeletePost(userId int64, id int64) *errors.Error {
 
 	return nil
 }
+
+type PostListReq struct {
+	Conditions *map[string]interface{}
+	Offset     int
+	Limit      int
+}
+
+func GetPostList(req *PostListReq) ([]*post.Formatted, error) {
+	posts, err := post.GetPostsByConditions(conf.DB, req.Conditions, req.Offset, req.Limit)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return MergePosts(posts)
+}
+
+// MergePosts post数据整合
+func MergePosts(posts []*post.Post) ([]*post.Formatted, error) {
+	postIds := make([]int64, 0, len(posts))
+	userIds := make([]int64, 0, len(posts))
+	for _, post := range posts {
+		postIds = append(postIds, post.ID)
+		userIds = append(userIds, post.UserID)
+	}
+
+	postContents, err := post.GetPostContentsByConditions(
+		conf.DB,
+		&map[string]interface{}{
+			"post_id IN ?": postIds,
+			"ORDER":        "sort ASC",
+		}, 0, 0,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	users, err := user.GetUsersByConditions(
+		conf.DB,
+		&map[string]interface{}{
+			"id IN ?": userIds,
+		}, 0, 0,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	userMap := make(map[int64]*user.Formatted, len(users))
+	for _, user := range users {
+		userMap[user.ID] = user.Format()
+	}
+
+	contentMap := make(map[int64][]*post.ContentFormatted, len(postContents))
+	for _, content := range postContents {
+		contentMap[content.PostID] = append(contentMap[content.PostID], content.Format())
+	}
+
+	// 数据整合
+	postsFormatted := make([]*post.Formatted, 0, len(posts))
+	for _, post := range posts {
+		postFormatted := post.Format()
+		postFormatted.User = userMap[post.UserID]
+		postFormatted.Contents = contentMap[post.ID]
+		postsFormatted = append(postsFormatted, postFormatted)
+	}
+	return postsFormatted, nil
+}
+
+func GetPostCount(conditions *map[string]interface{}) (int64, error) {
+	return post.CountByConditions(conf.DB, conditions)
+}

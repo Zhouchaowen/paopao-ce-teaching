@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/martian/log"
 	"net/http"
+	"paopao-ce-teaching/internal/cores/post"
 	"paopao-ce-teaching/internal/services"
 	"paopao-ce-teaching/pkg/app"
 	"paopao-ce-teaching/pkg/errors"
@@ -211,4 +212,58 @@ func ChangeNickname(c *gin.Context) {
 	services.UpdateUserInfo(user)
 
 	app.ToResponse(c, nil)
+}
+
+func GetUserPosts(c *gin.Context) {
+	username := c.Query("username")
+
+	userTmp, err := services.GetUserByUsername(username)
+	if err != nil {
+		log.Errorf("service.GetUserByUsername err: %v\n", err)
+		app.ToErrorResponse(c, errors.NoExistUsername)
+		return
+	}
+
+	cusername, exists := c.Get("USERNAME")
+	if !exists {
+		app.ToErrorResponse(c, errors.UnauthorizedAuthNotExist)
+		return
+	}
+
+	self, err := services.GetUserByUsername(cusername.(string))
+	if err != nil {
+		app.ToErrorResponse(c, errors.UnauthorizedAuthNotExist)
+		return
+	}
+
+	visibilities := []post.VisibleT{post.VisitPublic}
+	if self.ID > 0 {
+		if self.ID == userTmp.ID || self.IsAdmin {
+			visibilities = append(visibilities, post.VisitPrivate, post.VisitFriend)
+		} else {
+			visibilities = append(visibilities, post.VisitFriend)
+		}
+	}
+
+	conditions := &map[string]interface{}{
+		"user_id":         userTmp.ID,
+		"visibility IN ?": visibilities,
+		"ORDER":           "latest_replied_on DESC",
+	}
+
+	posts, err := services.GetPostList(
+		&services.PostListReq{
+			Conditions: conditions,
+			Offset:     (app.GetPage(c) - 1) * app.GetPageSize(c),
+			Limit:      app.GetPageSize(c),
+		},
+	)
+	if err != nil {
+		log.Errorf("service.GetPostList err: %v\n", err)
+		app.ToErrorResponse(c, errors.GetPostsFailed)
+		return
+	}
+	totalRows, _ := services.GetPostCount(conditions)
+
+	app.ToResponseList(c, posts, totalRows)
 }
