@@ -100,6 +100,19 @@ type PostContent struct {
 	IsDel      soft_delete.DeletedAt `gorm:"softDelete:flag" json:"is_del"` // 是否删除 0 为未删除、1 为已删除
 }
 
+func (p *PostContent) Format() *ContentFormatted {
+	if p.ID == 0 {
+		return nil
+	}
+	return &ContentFormatted{
+		ID:      p.ID,
+		PostID:  p.PostID,
+		Content: p.Content,
+		Type:    p.Type,
+		Sort:    p.Sort,
+	}
+}
+
 // 类型，1标题，2文字段落，3图片地址，4视频地址，5语音地址，6链接地址，7附件资源
 
 type ContentT int

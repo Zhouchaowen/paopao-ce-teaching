@@ -41,7 +41,7 @@ func DoLogin(param *AuthRequest) (*user.User, error) {
 		// 对比密码是否正确
 		if ValidPassword(u.Password, param.Password, u.Salt) {
 
-			if u.Status == user.UserStatusClosed {
+			if u.Status == user.Closed {
 				return nil, errors.UserHasBeenBanned
 			}
 
@@ -108,7 +108,7 @@ func Register(username, password string) (*user.User, error) {
 		Password: password,
 		Avatar:   "test.png",
 		Salt:     salt,
-		Status:   user.UserStatusNormal,
+		Status:   user.Normal,
 	}
 
 	userTmp, err := user.Create(conf.DB, userTmp)

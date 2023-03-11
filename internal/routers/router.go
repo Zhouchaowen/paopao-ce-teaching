@@ -47,6 +47,13 @@ func NewRouter() *gin.Engine {
 	{
 		// 发布动态
 		authApi.POST("/post", api.CreatePost)
+
+		// 删除动态
+		authApi.DELETE("/post", api.DeletePost)
+
+		// 获取动态详情
+		r.GET("/post", api.GetPost)
+
 	}
 
 	// 默认404

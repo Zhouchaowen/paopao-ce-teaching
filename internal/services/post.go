@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/martian/log"
+	"gorm.io/gorm"
 	"paopao-ce-teaching/internal/conf"
 	"paopao-ce-teaching/internal/cores/post"
+	"paopao-ce-teaching/internal/cores/user"
+	"paopao-ce-teaching/pkg/errors"
 	"paopao-ce-teaching/pkg/util"
 	"strings"
 )
@@ -89,4 +92,87 @@ func tagsFrom(originTags []string) []string {
 		}
 	}
 	return tags
+}
+
+func GetPost(id int64) (*post.Formatted, error) {
+	postTmp, err := post.GetPostById(conf.DB, id)
+	if err != nil {
+		return nil, err
+	}
+
+	postContents, err := post.GetPostContentsByConditions(
+		conf.DB,
+		&map[string]interface{}{
+			"post_id = ?": postTmp.ID,
+			"ORDER":       "sort ASC",
+		}, 0, 0,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	users, err := user.GetUsersByConditions(
+		conf.DB,
+		&map[string]interface{}{
+			"id = ?": postTmp.UserID,
+		}, 0, 0,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// 数据整合
+	postFormatted := postTmp.Format()
+	for _, user := range users {
+		postFormatted.User = user.Format()
+	}
+	for _, content := range postContents {
+		if content.PostID == postTmp.ID {
+			postFormatted.Contents = append(postFormatted.Contents, content.Format())
+		}
+	}
+	return postFormatted, nil
+}
+
+type PostDelReq struct {
+	ID int64 `json:"id" binding:"required"`
+}
+
+func DeletePost(userId int64, id int64) *errors.Error {
+	postTmp, err := post.GetPostById(conf.DB, id)
+	if err != nil {
+		return errors.GetPostFailed
+	}
+
+	userTmp, err := user.GetUserByID(conf.DB, userId)
+	if err != nil {
+		return errors.NoPermission
+	}
+	if postTmp.UserID != userId && !userTmp.IsAdmin {
+		return errors.NoPermission
+	}
+
+	err = conf.DB.Transaction(
+		func(tx *gorm.DB) error {
+
+			// 删推文
+			if err := post.DeletePostByPostId(tx, postTmp.ID); err != nil {
+				return err
+			}
+
+			// 删内容
+			if err := post.DeletePostContentByPostId(tx, postTmp.ID); err != nil {
+				return err
+			}
+
+			return nil
+		},
+	)
+
+	if err != nil {
+		log.Errorf("service.DeletePost delete post failed: %s", err)
+		return errors.DeletePostFailed
+	}
+
+	return nil
 }

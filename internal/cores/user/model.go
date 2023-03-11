@@ -3,8 +3,8 @@ package user
 import "gorm.io/plugin/soft_delete"
 
 const (
-	UserStatusNormal int = iota + 1
-	UserStatusClosed
+	Normal int = iota + 1
+	Closed
 )
 
 type User struct {
@@ -31,4 +31,19 @@ type Formatted struct {
 	Status   int    `json:"status"`
 	Avatar   string `json:"avatar"`
 	IsAdmin  bool   `json:"is_admin"`
+}
+
+func (u *User) Format() *Formatted {
+	if u.ID > 0 {
+		return &Formatted{
+			ID:       u.ID,
+			Nickname: u.Nickname,
+			Username: u.Username,
+			Status:   u.Status,
+			Avatar:   u.Avatar,
+			IsAdmin:  u.IsAdmin,
+		}
+	}
+
+	return nil
 }
